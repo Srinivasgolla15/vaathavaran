@@ -3,18 +3,20 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { useNavigate, Link } from "react-router-dom";
 
-const DEVICE_KEY = "weather-device-id";
+const USER_NAME_KEY = "weather-user-name";
+const USER_ID_KEY = "weather-user-id";
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
-function getDeviceId() {
-    let deviceId = localStorage.getItem(DEVICE_KEY);
+function getUserInfo() {
+    let userName = localStorage.getItem(USER_NAME_KEY) || "guest";
+    let userId = localStorage.getItem(USER_ID_KEY);
 
-    if (!deviceId) {
-        deviceId = crypto.randomUUID ? crypto.randomUUID() : `device-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-        localStorage.setItem(DEVICE_KEY, deviceId);
+    if (!userId) {
+        userId = `user-${encodeURIComponent(userName.trim() || "guest")}-${Date.now()}`;
+        localStorage.setItem(USER_ID_KEY, userId);
     }
 
-    return deviceId;
+    return { userName, userId };
 }
 
 export default function SearchBox({updateWeather}) {
@@ -22,6 +24,7 @@ export default function SearchBox({updateWeather}) {
     const API_URL = "https://api.openweathermap.org/data/2.5/weather";
     const API_KEY = "64762f58bfc9df7651def64e208e8ec2";
     let [city, setCity] = useState("");
+    let [userName, setUserName] = useState(localStorage.getItem(USER_NAME_KEY) || "guest");
 
     let fetchWeather = async (city) => {
         let response = await fetch(`${API_URL}?q=${city}&appid=${API_KEY}&units=metric`);
@@ -41,7 +44,7 @@ export default function SearchBox({updateWeather}) {
         console.log(weather);
         updateWeather(weather);
 
-        const deviceId = getDeviceId();
+        const { userId } = getUserInfo();
         const searchUrl = `${API_BASE}/search`;
 
         await fetch(searchUrl, {
@@ -51,7 +54,7 @@ export default function SearchBox({updateWeather}) {
                 city: weather.city,
                 country: weather.country,
                 temperature: weather.temp,
-                deviceId
+                userId
             })
         });
 
@@ -65,9 +68,9 @@ export default function SearchBox({updateWeather}) {
     let handleSubmit = (e)=>{
         e.preventDefault();
         console.log(city);
+        localStorage.setItem(USER_NAME_KEY, userName.trim() || "guest");
         fetchWeather(city);
         setCity("");
-        
     }
 
     return (
@@ -79,6 +82,7 @@ export default function SearchBox({updateWeather}) {
             marginTop: "20px"
         }}>
             <h3> Search for the Weather</h3>
+            <TextField label="User name" variant="outlined" value={userName} onChange={(e) => setUserName(e.target.value)} />
             <TextField label="City name" variant="outlined" value={city} onChange={handleChange} />
             <Button variant="contained" onClick={handleSubmit}>
                 Search

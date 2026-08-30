@@ -20,18 +20,20 @@ interface WeatherHistory {
   searchedAt: string;
 }
 
-const DEVICE_KEY = "weather-device-id";
+const USER_NAME_KEY = "weather-user-name";
+const USER_ID_KEY = "weather-user-id";
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
-function getDeviceId() {
-    let deviceId = localStorage.getItem(DEVICE_KEY);
+function getUserInfo() {
+    let userName = localStorage.getItem(USER_NAME_KEY) || "guest";
+    let userId = localStorage.getItem(USER_ID_KEY);
 
-    if (!deviceId) {
-        deviceId = crypto.randomUUID ? crypto.randomUUID() : `device-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-        localStorage.setItem(DEVICE_KEY, deviceId);
+    if (!userId) {
+        userId = `user-${encodeURIComponent(userName.trim() || "guest")}-${Date.now()}`;
+        localStorage.setItem(USER_ID_KEY, userId);
     }
 
-    return deviceId;
+    return { userName, userId };
 }
 
 export default function History() {
@@ -39,8 +41,8 @@ export default function History() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const deviceId = getDeviceId();
-        const historyUrl = `${API_BASE}/history?deviceId=${encodeURIComponent(deviceId)}`;
+        const { userId } = getUserInfo();
+        const historyUrl = `${API_BASE}/history?userId=${encodeURIComponent(userId)}`;
 
         fetch(historyUrl)
             .then(response => response.json())

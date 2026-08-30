@@ -22,7 +22,7 @@ const weatherSchema = new mongoose.Schema({
   city: String,
   country: String,
   temperature: Number,
-  deviceId: { type: String, index: true },
+  userId: { type: String, index: true },
   searchedAt: { type: Date, default: Date.now }
 });
 
@@ -38,13 +38,13 @@ app.get("/", (req, res) => {
 // POST route (save data)
 app.post("/search", async (req, res) => {
   try {
-    const { city, country, temperature, deviceId } = req.body;
+    const { city, country, temperature, userId } = req.body;
 
     if (!city || !country || temperature === undefined) {
       return res.status(400).json({ message: "Missing required weather fields" });
     }
 
-    const weather = new Weather({ city, country, temperature, deviceId: deviceId || "anonymous" });
+    const weather = new Weather({ city, country, temperature, userId: userId || "anonymous" });
     await weather.save();
 
     res.status(201).json({ message: "Weather data saved successfully" });
@@ -56,8 +56,8 @@ app.post("/search", async (req, res) => {
 // GET route (history)
 app.get("/history", async (req, res) => {
   try {
-    const deviceId = req.query.deviceId ? String(req.query.deviceId) : null;
-    const filter = deviceId ? { deviceId } : {};
+    const userId = req.query.userId ? String(req.query.userId) : null;
+    const filter = userId ? { userId } : {};
 
     const history = await Weather.find(filter)
       .sort({ searchedAt: -1 })

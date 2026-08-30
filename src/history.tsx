@@ -20,20 +20,18 @@ interface WeatherHistory {
   searchedAt: string;
 }
 
-const USER_NAME_KEY = "weather-user-name";
 const USER_ID_KEY = "weather-user-id";
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
-function getUserInfo() {
-    let userName = localStorage.getItem(USER_NAME_KEY) || "guest";
+function getUserId() {
     let userId = localStorage.getItem(USER_ID_KEY);
 
     if (!userId) {
-        userId = `user-${encodeURIComponent(userName.trim() || "guest")}-${Date.now()}`;
+        userId = crypto.randomUUID ? crypto.randomUUID() : `user-${Date.now()}-${Math.random().toString(16).slice(2)}`;
         localStorage.setItem(USER_ID_KEY, userId);
     }
 
-    return { userName, userId };
+    return userId;
 }
 
 export default function History() {
@@ -41,7 +39,7 @@ export default function History() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const { userId } = getUserInfo();
+        const userId = getUserId();
         const historyUrl = `${API_BASE}/history?userId=${encodeURIComponent(userId)}`;
 
         fetch(historyUrl)

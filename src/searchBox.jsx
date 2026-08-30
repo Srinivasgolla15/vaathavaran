@@ -3,20 +3,18 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { useNavigate, Link } from "react-router-dom";
 
-const USER_NAME_KEY = "weather-user-name";
 const USER_ID_KEY = "weather-user-id";
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
-function getUserInfo() {
-    let userName = localStorage.getItem(USER_NAME_KEY) || "guest";
+function getUserId() {
     let userId = localStorage.getItem(USER_ID_KEY);
 
     if (!userId) {
-        userId = `user-${encodeURIComponent(userName.trim() || "guest")}-${Date.now()}`;
+        userId = crypto.randomUUID ? crypto.randomUUID() : `user-${Date.now()}-${Math.random().toString(16).slice(2)}`;
         localStorage.setItem(USER_ID_KEY, userId);
     }
 
-    return { userName, userId };
+    return userId;
 }
 
 export default function SearchBox({updateWeather}) {
@@ -24,7 +22,6 @@ export default function SearchBox({updateWeather}) {
     const API_URL = "https://api.openweathermap.org/data/2.5/weather";
     const API_KEY = "64762f58bfc9df7651def64e208e8ec2";
     let [city, setCity] = useState("");
-    let [userName, setUserName] = useState(localStorage.getItem(USER_NAME_KEY) || "guest");
 
     let fetchWeather = async (city) => {
         let response = await fetch(`${API_URL}?q=${city}&appid=${API_KEY}&units=metric`);
@@ -44,7 +41,7 @@ export default function SearchBox({updateWeather}) {
         console.log(weather);
         updateWeather(weather);
 
-        const { userId } = getUserInfo();
+        const userId = getUserId();
         const searchUrl = `${API_BASE}/search`;
 
         await fetch(searchUrl, {
@@ -68,7 +65,6 @@ export default function SearchBox({updateWeather}) {
     let handleSubmit = (e)=>{
         e.preventDefault();
         console.log(city);
-        localStorage.setItem(USER_NAME_KEY, userName.trim() || "guest");
         fetchWeather(city);
         setCity("");
     }
@@ -82,7 +78,6 @@ export default function SearchBox({updateWeather}) {
             marginTop: "20px"
         }}>
             <h3> Search for the Weather</h3>
-            <TextField label="User name" variant="outlined" value={userName} onChange={(e) => setUserName(e.target.value)} />
             <TextField label="City name" variant="outlined" value={city} onChange={handleChange} />
             <Button variant="contained" onClick={handleSubmit}>
                 Search

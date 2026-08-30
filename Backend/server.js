@@ -26,7 +26,13 @@ const weatherSchema = new mongoose.Schema({
 });
 
 const Weather = mongoose.model("Weather", weatherSchema);
- 
+
+app.get("/", (req, res) => {
+  res.json({
+    message: "Weather API is running",
+    routes: ["/search", "/history"]
+  });
+});
 
 // POST route (save data)
 app.post("/search", async (req, res) => {

@@ -2,6 +2,20 @@ import { useState } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { useNavigate, Link } from "react-router-dom";
+
+const DEVICE_KEY = "weather-device-id";
+
+function getDeviceId() {
+    let deviceId = localStorage.getItem(DEVICE_KEY);
+
+    if (!deviceId) {
+        deviceId = crypto.randomUUID ? crypto.randomUUID() : `device-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        localStorage.setItem(DEVICE_KEY, deviceId);
+    }
+
+    return deviceId;
+}
+
 export default function SearchBox({updateWeather}) {
     const navigate = useNavigate();
     const API_URL = "https://api.openweathermap.org/data/2.5/weather";
@@ -26,13 +40,16 @@ export default function SearchBox({updateWeather}) {
         console.log(weather);
         updateWeather(weather);
 
-        await fetch("http://localhost:5000/search", {
+        const deviceId = getDeviceId();
+
+        await fetch("/search", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 city: weather.city,
                 country: weather.country,
-                temperature: weather.temp
+                temperature: weather.temp,
+                deviceId
             })
         });
 

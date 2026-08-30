@@ -20,12 +20,27 @@ interface WeatherHistory {
   searchedAt: string;
 }
 
+const DEVICE_KEY = "weather-device-id";
+
+function getDeviceId() {
+    let deviceId = localStorage.getItem(DEVICE_KEY);
+
+    if (!deviceId) {
+        deviceId = crypto.randomUUID ? crypto.randomUUID() : `device-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        localStorage.setItem(DEVICE_KEY, deviceId);
+    }
+
+    return deviceId;
+}
+
 export default function History() {
     const [history, setHistory] = useState<WeatherHistory[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch('/history')
+        const deviceId = getDeviceId();
+
+        fetch(`/history?deviceId=${encodeURIComponent(deviceId)}`)
             .then(response => response.json())
             .then(data => {
                 setHistory(data);

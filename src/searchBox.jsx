@@ -4,6 +4,7 @@ import Button from "@mui/material/Button";
 import { useNavigate, Link } from "react-router-dom";
 
 const DEVICE_KEY = "weather-device-id";
+const API_BASE = import.meta.env.VITE_API_URL || "";
 
 function getDeviceId() {
     let deviceId = localStorage.getItem(DEVICE_KEY);
@@ -41,8 +42,9 @@ export default function SearchBox({updateWeather}) {
         updateWeather(weather);
 
         const deviceId = getDeviceId();
+        const searchUrl = `${API_BASE}/search`;
 
-        await fetch("/search", {
+        await fetch(searchUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

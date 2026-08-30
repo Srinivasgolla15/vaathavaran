@@ -21,6 +21,7 @@ interface WeatherHistory {
 }
 
 const DEVICE_KEY = "weather-device-id";
+const API_BASE = import.meta.env.VITE_API_URL || "";
 
 function getDeviceId() {
     let deviceId = localStorage.getItem(DEVICE_KEY);
@@ -39,8 +40,9 @@ export default function History() {
 
     useEffect(() => {
         const deviceId = getDeviceId();
+        const historyUrl = `${API_BASE}/history?deviceId=${encodeURIComponent(deviceId)}`;
 
-        fetch(`/history?deviceId=${encodeURIComponent(deviceId)}`)
+        fetch(historyUrl)
             .then(response => response.json())
             .then(data => {
                 setHistory(data);
